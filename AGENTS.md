@@ -1,6 +1,6 @@
 # Agents Guide: Stock Market Time Machine
 
-This repository contains a Flask web app that lets users "time travel" through historical market data and trade along the timeline using locally cached datasets. Agents should use this guide for quick orientation, conventions, and safe changes.
+This repository contains a Flask prototype and a full client‑side web app that lets users “time travel” through historical market data and trade along the timeline using locally cached datasets. Use this guide for quick orientation, conventions, and safe changes.
 
 ## Project Layout
 
@@ -10,14 +10,13 @@ This repository contains a Flask web app that lets users "time travel" through h
 - `data/` — Local datasets (Parquet/CSV) and manifests used at runtime; no network access in the app.
   - `data/stocks/*.parquet`, `data/crypto/*.parquet`, `data/*/manifest.json`
   - `data/sources/` — inputs used by the pipeline (e.g., candidate lists, cached S&P 500 table).
-- `templates/` — Jinja2 HTML templates.
-- `static/style.css` — App stylesheet.
-- `test_catalog.py` — Simple sanity check for `MarketDataCatalog` path resolution and dates.
-- `web/` — Client-first TypeScript app (Vite + IndexedDB) that runs entirely from static assets.
+- `templates/` — Jinja2 HTML templates (prototype).
+- `static/style.css` — Prototype stylesheet.
+- `web/` — Client‑first TypeScript app (Vite + IndexedDB) that runs entirely from static assets.
 
 ## Quick Start
 
-- Python: 3.10+ recommended (repo currently runs with 3.11 in cache paths).
+- Python: 3.10+ recommended (repo runs with 3.11 in cache paths).
 - Create a virtual environment and install dependencies:
 
   Windows (PowerShell)
@@ -82,28 +81,48 @@ The app is designed to run fully offline against `data/`. To refresh or expand d
   npm run preview
   ```
 - The SPA reads ticker and history JSON from `web/public/data/` and uses `web/public/style.css` (copied from `static/style.css`).
+- Static hosting: Vite `base` is set to `./` in `web/vite.config.ts`, and client fetches use `import.meta.env.BASE_URL` (see `web/src/api.ts`). This makes the bundle portable from any subpath or CDN.
 - Run `python scripts/build_market_data.py --emit-static` whenever you need to refresh `web/public/data/` after updating the datasets.
 
-### UI Parity with Flask
-- The client reuses the Flask prototype�s CSS (`web/public/style.css`).
-- Layout and components mirror `templates/portfolio.html` (rendered via TypeScript in `web/src/main.ts`).
-- Search, pinned stocks, buy/sell actions, time controls, crypto visibility, transactions table, and the portfolio chart are implemented client-side.
+### UI parity
+- The client mirrors the prototype’s layout.
+- Features: search, pinned stocks, buy/sell, time controls, crypto visibility, transactions, and portfolio chart.
 
 ### Static Data Assets
-- `web/public/data/manifest.json` � generated via the pipeline (tickers and metadata).
-- `web/public/data/history/*.json` � per-symbol daily `{date, price}` arrays.
+- `web/public/data/manifest.json` — generated via the pipeline (tickers and metadata).
+- `web/public/data/history/*.json` — per‑symbol daily `{date, price}` arrays.
 - These files are lazily fetched and cached in IndexedDB; no Flask APIs are required at runtime.
 
 ### Production Hosting
 - Build the client: `npm run build` creates `web/dist/`.
-- Serve `web/dist/` (plus the generated `web/public/data/` if your host requires it) from any static host or CDN.
+- Serve the contents of `web/dist/` from any static host (GitHub Pages, Netlify, Cloudflare Pages, S3/CloudFront, Nginx/Apache). The build includes `data/` under `web/dist/data/`.
+- Because asset and data URLs are relative, you can host at a subpath without extra config.
 - Optionally keep Flask around only to serve the static bundle; otherwise the SPA runs standalone.
 
 ### IndexedDB Stores
-- `system` � key: `system`; fields: `currentDate`, `timeOfDay`, `cash`.
-- `holdings` � key: `symbol`; fields: `shares`, `avgCost`.
-- `transactions` � auto-increment `id`; fields: `date`, `time`, `type`, `symbol`, `shares`, `price`, `total`.
-- `prices` � key: `${symbol}:${date}`; index `bySymbol`; fields: `symbol`, `date`, `price`.
+- `system` – key: `system`; fields: `currentDate`, `timeOfDay`, `cash`.
+- `holdings` – key: `symbol`; fields: `shares`, `avgCost`.
+- `transactions` – auto‑increment `id`; fields: `date`, `time`, `type`, `symbol`, `shares`, `price`, `total`.
+- `prices` – key: `${symbol}:${date}`; index `bySymbol`; fields: `symbol`, `date`, `price`.
+
+Schema/versioning
+- Current client DB version is `2` (see `web/src/db.ts`). Upgrades create any missing stores automatically when the app loads.
+- If a user opened an older build and state looks off, clear the “time‑machine” DB in browser devtools or click “Start Over”.
+
+### Weekend Trading Behavior
+- Stocks: trading is disabled on weekends. The UI hides Sell/Sell All in holdings and the Buy forms in the search card, and shows a note instead.
+- Crypto (BTC‑USD, ETH‑USD): trading remains available 7 days a week, visible only after their invention dates.
+
+### Portfolio Chart & History
+- The client maintains monthly portfolio history and backfills one point per month even when the user jumps across years.
+- Backfill replays transactions month‑by‑month to compute accurate cash/holdings values at each month‑end (see `computeFilledMonthlyHistory` in `web/src/main.ts`).
+- Axis label thinning avoids crowding for long ranges (see `buildMonthlyLabels` in `web/src/main.ts`).
+
+### Client Fetch Paths
+- Tickers: `data/manifest.json`
+- History: `data/history/<SYMBOL>.json`
+- Fetches are resolved relative to the deployed base URL. Avoid introducing absolute `/...` URLs in new code.
+
 ## Conventions
 
 - Python
@@ -123,14 +142,14 @@ The app is designed to run fully offline against `data/`. To refresh or expand d
 
 - Add a new page/route
   - Implement the view in `app.py` near related routes.
-  - Add a corresponding template in `templates/` and link it from the main page (`portfolio.html` served at `/`) where relevant.
+  - Add a corresponding template in `templates/` and link it from the main page where relevant.
 - Extend available symbols/metadata
   - Update the pipeline (`scripts/build_market_data.py`) or manifests, then rebuild data.
 - Add computed metrics (e.g., returns)
   - Add helpers in `app.py` or a small module; reuse cached frames from `StockMarket`.
- - Client features (TS app)
-   - Implement views under `web/src/` and load data from `/data/\*` JSON.
-   - Persist user state in IndexedDB; keep server sessions minimal.
+- Client features (TS app)
+  - Implement views under `web/src/` and load data from `/data/*` JSON.
+  - Persist user state in IndexedDB; keep server sessions minimal.
 
 ## Testing & Verification
 
@@ -140,9 +159,9 @@ The app is designed to run fully offline against `data/`. To refresh or expand d
   ```
 - Manual smoke test
   - Start the app, load a well‑known ticker (e.g., `AAPL`, `MSFT`), and verify price chart and buy/sell actions.
-  - Try crypto symbols (`BTC-USD`, `ETH-USD`) to confirm preloading.
- - Client smoke test
-   - Run `npm run dev` in `web/` and use the search to fetch and cache monthly history for a ticker.
+  - Try crypto symbols (`BTC‑USD`, `ETH‑USD`) to confirm preloading.
+- Client smoke test
+  - Run `npm run dev` in `web/` and use the search to fetch and cache history for a ticker. Confirm monthly charting and weekend rules.
 
 ## Guardrails for Agents
 
@@ -151,16 +170,17 @@ The app is designed to run fully offline against `data/`. To refresh or expand d
 - Avoid adding new runtime dependencies unless necessary; prefer the existing stack.
 - If you touch routes or templates, ensure the app still starts and the index loads without errors.
 - Update this `AGENTS.md` if you introduce new conventions or flows.
- - Keep `web/public/data/` outputs in sync with the pipeline and avoid manual edits to generated JSON.
+- Keep `web/public/data/` outputs in sync with the pipeline and avoid manual edits to generated JSON.
+- Keep monthly chart granularity intact; do not bucket or downsample unless requested. Coordinate changes to `computeFilledMonthlyHistory` and `buildMonthlyLabels`.
+- Maintain relative URLs in the web client (Vite `base: './'`) to preserve portability for static hosting.
 
 ## Troubleshooting
 
 - Parquet read errors: ensure `pyarrow` or `fastparquet` is installed.
 - Missing data files: run the data pipeline or limit testing to symbols present under `data/`.
-- Slow first page load for crypto: `app.py` preloads `BTC-USD` and `ETH-USD` at startup; keep it that way to avoid UI stalls.
+- If the SPA shows stale data or no transactions, hard reload and/or click “Start Over” to reset IndexedDB (version 2).
+- Slow first page load for crypto: keep preloading `BTC‑USD` and `ETH‑USD` at startup.
 
 ---
 Scope: This file applies to the entire repository. When more specific conventions are required, add an `AGENTS.md` in the relevant subdirectory; deeper files take precedence.
-
-
 

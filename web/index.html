@@ -15,93 +15,100 @@
     </div>
   </div>
 
-  <div class="info">
-    <p><strong>Date:</strong> <span id="infoDate"></span> (<span id="infoDay"></span>) - <span id="infoTime"></span></p>
-    <p><strong>Cash:</strong> <span id="infoCash"></span></p>
-    <p><strong>Total Portfolio Value:</strong> <span id="infoPV"></span></p>
-  </div>
-
-  <div id="pinnedSection" class="pinned-stocks-section" style="display:none">
-    <h2>Pinned Stocks</h2>
-    <p class="pinned-intro">Quick access to stocks you're watching</p>
-    <div id="pinnedGrid" class="pinned-grid"></div>
-  </div>
-
-  <div class="time-controls-main">
-    <button id="jumpWeek" class="jump-btn">Next Week</button>
-    <button id="jumpMonth" class="jump-btn">Next Month</button>
-    <button id="jumpYear" class="jump-btn">Next Year</button>
-    <button id="nextBtn" class="next-btn">Next</button>
-    <button id="skipWeekend" class="jump-btn" style="display:none">Skip Weekend</button>
-    <form id="jumpForm" class="jump-form">
-      <label>Jump to:</label>
-      <select id="jumpYearSel"></select>
-      <select id="jumpMonthSel"></select>
-      <select id="jumpDaySel"></select>
-      <button type="submit">Jump</button>
-    </form>
-  </div>
-  <div id="jumpError" class="notification error-notification" style="display:none"></div>
-
-  <div id="portfolioSection" class="portfolio" style="display:none">
-    <h2>Your Holdings</h2>
-    <table>
-      <thead>
-      <tr>
-        <th>Stock</th>
-        <th>Shares</th>
-        <th>Current Price</th>
-        <th>Avg Cost</th>
-        <th>Position Value</th>
-        <th>Gain/Loss</th>
-        <th>Actions</th>
-      </tr>
-      </thead>
-      <tbody id="holdingsBody"></tbody>
-    </table>
-  </div>
-  
-  <div class="portfolio-chart">
-    <h2>Portfolio Value History</h2>
-    <canvas id="portfolioChart"></canvas>
-  </div>
-
-  <div class="buy-section-main">
-    <h2>Buy Stocks</h2>
-    <p id="weekendNote" class="market-closed-note" style="display:none">Stock market is closed on weekends. Use Skip Weekend to resume trading on Monday.</p>
-    <form id="searchForm" class="search-form-main">
-      <div class="search-input-wrapper">
-        <input type="text" id="searchInput" placeholder="Enter stock symbol (e.g., AAPL, TSLA, MSFT)" required>
-        <div id="suggestions" class="autocomplete-results"></div>
+  <div class="layout">
+    <main class="main-col">
+      <div class="info">
+        <p><strong>Date:</strong> <span id="infoDate"></span> (<span id="infoDay"></span>) - <span id="infoTime"></span></p>
+        <p><strong>Cash:</strong> <span id="infoCash"></span></p>
+        <p><strong>Total Portfolio Value:</strong> <span id="infoPV"></span></p>
       </div>
-      <button type="submit" class="trade-button trade-button--secondary">Search</button>
-    </form>
-    <div id="loadingMessage" style="display:none; margin-top: 15px; color: #007bff;"><strong>Loading stock data... This may take a moment for first-time downloads.</strong></div>
-    <div id="buySection" class="buy-stock-section" style="display:none"></div>
-  </div>
 
-  <div id="transactionsSection" class="transactions" style="display:none">
-    <h2>Recent Transactions</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Type</th>
-          <th>Symbol</th>
-          <th>Shares</th>
-          <th>Price</th>
-          <th>Total</th>
-          <th>Profit/Loss</th>
-        </tr>
-      </thead>
-      <tbody id="txBody"></tbody>
-    </table>
-  </div>
+      <div class="time-controls-main">
+        <button id="jumpWeek" class="jump-btn">Next Week</button>
+        <button id="jumpMonth" class="jump-btn">Next Month</button>
+        <button id="jumpYear" class="jump-btn">Next Year</button>
+        <button id="nextBtn" class="next-btn">Next</button>
+        <button id="skipWeekend" class="jump-btn" style="display:none">Skip Weekend</button>
+        <form id="jumpForm" class="jump-form">
+          <label>Jump to:</label>
+          <select id="jumpYearSel"></select>
+          <select id="jumpMonthSel"></select>
+          <select id="jumpDaySel"></select>
+          <button type="submit">Jump</button>
+        </form>
+      </div>
+      <div id="jumpError" class="notification error-notification" style="display:none"></div>
 
-  <div id="cryptoSection" class="crypto-section" style="display:none">
-    <h2>Cryptocurrencies</h2>
-    <p class="crypto-intro">Buy cryptocurrencies that have been invented!</p>
-    <div id="cryptoGrid" class="crypto-grid"></div>
+      <div id="pinnedSection" class="pinned-stocks-section" style="display:none">
+        <h2>Pinned Stocks</h2>
+        <p class="pinned-intro">Quick access to stocks you're watching</p>
+        <div id="pinnedGrid" class="pinned-grid"></div>
+      </div>
+
+      <div id="portfolioSection" class="portfolio" style="display:none">
+        <h2>Your Holdings</h2>
+        <table>
+          <thead>
+          <tr>
+            <th>Stock</th>
+            <th>Shares</th>
+            <th>Current Price</th>
+            <th>Avg Cost</th>
+            <th>Position Value</th>
+            <th>Gain/Loss</th>
+            <th>Actions</th>
+          </tr>
+          </thead>
+          <tbody id="holdingsBody"></tbody>
+        </table>
+      </div>
+      
+      <div class="portfolio-chart">
+        <h2>Portfolio Value History</h2>
+        <canvas id="portfolioChart"></canvas>
+      </div>
+    </main>
+
+    <aside class="side-col">
+      <div class="buy-section-main">
+        <h2>Buy Stocks</h2>
+        <p id="weekendNote" class="market-closed-note" style="display:none">Stock market is closed on weekends. Use Skip Weekend to resume trading on Monday.</p>
+        <form id="searchForm" class="search-form-main">
+          <div class="search-input-wrapper">
+            <input type="text" id="searchInput" placeholder="Enter stock symbol (e.g., AAPL, TSLA, MSFT)" required>
+            <div id="suggestions" class="autocomplete-results"></div>
+          </div>
+          <button type="submit" class="trade-button trade-button--secondary">Search</button>
+        </form>
+        <div id="loadingMessage" style="display:none; margin-top: 15px; color: #007bff;"><strong>Loading stock data... This may take a moment for first-time downloads.</strong></div>
+        <div id="buySection" class="buy-stock-section" style="display:none"></div>
+      </div>
+
+      <div id="transactionsSection" class="transactions" style="display:none">
+        <h2>Recent Transactions</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Type</th>
+              <th>Symbol</th>
+              <th>Shares</th>
+              <th>Price</th>
+              <th>Total</th>
+              <th>Profit/Loss</th>
+            </tr>
+          </thead>
+          <tbody id="txBody"></tbody>
+        </table>
+      </div>
+
+      <div id="cryptoSection" class="crypto-section" style="display:none">
+        <h2>Cryptocurrencies</h2>
+        <p class="crypto-intro">Buy cryptocurrencies that have been invented!</p>
+        <div id="cryptoGrid" class="crypto-grid"></div>
+      </div>
+    </aside>
+
   </div>
 
   <!-- Sell Modal -->

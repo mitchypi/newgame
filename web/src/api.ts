@@ -10,10 +10,16 @@ export interface PricePointDTO {
   price: number;
 }
 
-const BASE = (import.meta as any).env?.BASE_URL || '/';
+// Build an absolute base URL that works with Vite's configurable base
+// and GitHub Pages (where base can be './').
+const BASE_URL = new URL(
+  ((import.meta as any).env?.BASE_URL as string) || './',
+  // Ensure absolute by resolving against the current page URL
+  typeof window !== 'undefined' ? window.location.href : 'http://localhost/'
+);
 
 export async function fetchTickers(): Promise<TickerMeta[]> {
-  const manifestUrl = new URL('data/manifest.json', BASE).toString();
+  const manifestUrl = new URL('data/manifest.json', BASE_URL).toString();
   const res = await fetch(manifestUrl, { cache: 'reload' });
   if (!res.ok) {
     console.error('Failed to load manifest', res.status, res.statusText);
@@ -30,7 +36,7 @@ export async function fetchTickers(): Promise<TickerMeta[]> {
 }
 
 export async function fetchHistory(symbol: string, _opts?: { start?: string; end?: string; agg?: 'monthly' | 'none' }): Promise<PricePointDTO[]> {
-  const url = new URL(`data/history/${encodeURIComponent(symbol)}.json`, BASE).toString();
+  const url = new URL(`data/history/${encodeURIComponent(symbol)}.json`, BASE_URL).toString();
   const res = await fetch(url, { cache: 'reload' });
   if (!res.ok) {
     console.error('History fetch failed', symbol, res.status, res.statusText);
